@@ -1,0 +1,35 @@
+# Eclipse files
+
+*.classpath
+
+*.project
+
+*.settings/
+
+
+# Maven / Java
+
+target/
+
+*.log
+
+*.tmp
+
+*.bak
+
+*.swp
+
+
+# IDEs
+
+.vscode/
+
+.idea/
+
+*.iml
+
+
+# Mac OS
+
+.DS_Store
+
