@@ -14,5 +14,6 @@
     </properties>
   <modules>
   	<module>core</module>
+  	<module>data-fetcher</module>
   </modules>
 </project>
