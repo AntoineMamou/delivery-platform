@@ -1,4 +1,4 @@
-package GraphReader;
+package GraphReader.graph;
 
 public class Edge {
 	private	int firstNodeId;

@@ -1,4 +1,4 @@
-package GraphReader;
+package GraphReader.model;
 
 public class Truck {
 	private int id;

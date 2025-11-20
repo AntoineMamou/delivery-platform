@@ -1,4 +1,4 @@
-package GraphReader;
+package GraphReader.model;
 
 import java.time.*;
 
