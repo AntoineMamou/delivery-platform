@@ -28,8 +28,5 @@ target/
 
 *.iml
 
-
-# Mac OS
-
-.DS_Store
-
+bin/
+*.class
