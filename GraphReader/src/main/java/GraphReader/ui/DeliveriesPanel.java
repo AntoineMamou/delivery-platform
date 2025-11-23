@@ -3,7 +3,8 @@ package GraphReader.ui;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-import GraphReader.model.Delivery;
+import com.delivery.core.model.Delivery;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
@@ -158,4 +159,9 @@ public class DeliveriesPanel extends VBox{
         return time;
     	
     }
+    
+    public ArrayList<Delivery> getDeliveries() {
+        return new ArrayList<>(deliveries); // return a copy
+    }
+
 }

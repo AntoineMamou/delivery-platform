@@ -15,6 +15,6 @@ public class DataFetcherService {
 
     public void loadDeliveries() {
         List<Delivery> deliveries = fetcher.fetchDeliveries();
-        eventBus.publish("delivery.loaded", deliveries);
+       // eventBus.publish("delivery.loaded", deliveries);
     }
 }

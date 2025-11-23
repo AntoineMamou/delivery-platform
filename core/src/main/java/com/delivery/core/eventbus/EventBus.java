@@ -1,18 +1,36 @@
 package com.delivery.core.eventbus;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class EventBus {
-    private Map<String, List<Consumer<Object>>> listeners = new HashMap<>();
 
-    public <T> void subscribe(String eventName, Consumer<T> handler) {
-        listeners.computeIfAbsent(eventName, k -> new ArrayList<>())
-                 .add((Consumer<Object>) handler);
+    private static final EventBus INSTANCE = new EventBus();
+
+    private final Map<Class<?>, List<Consumer<?>>> subscribers = new HashMap<>();
+
+    private EventBus() {
+        // private constructor = singleton
     }
 
-    public void publish(String eventName, Object data) {
-        listeners.getOrDefault(eventName, List.of())
-                 .forEach(listener -> listener.accept(data));
+    public static EventBus getInstance() {
+        return INSTANCE;
+    }
+
+    public <T> void subscribe(Class<T> eventType, Consumer<T> listener) {
+        subscribers.computeIfAbsent(eventType, k -> new ArrayList<>()).add(listener);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> void publish(T event) {
+        List<Consumer<?>> listeners = subscribers.get(event.getClass());
+        if (listeners != null) {
+            for (Consumer<?> listener : listeners) {
+                ((Consumer<T>) listener).accept(event);
+            }
+        }
     }
 }
