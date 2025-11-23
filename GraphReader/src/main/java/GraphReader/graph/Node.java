@@ -3,10 +3,10 @@ package GraphReader.graph;
 public class Node {
 	
 	private int id;
-	private	float X;
-	private	float Y;
+	private	double X;
+	private	double Y;
 		
-	public Node(int id, float X, float Y)
+	public Node(int id, double X, double Y)
 	{
 		this.id = id;
 		this.X = X;
@@ -15,9 +15,9 @@ public class Node {
 	
 	public int GetId() { return id; }
 		
-	public float GetX() {return X; }
+	public double GetX() {return X; }
 		
-	public float GetY() {return Y; }
+	public double GetY() {return Y; }
 		
 
 }
