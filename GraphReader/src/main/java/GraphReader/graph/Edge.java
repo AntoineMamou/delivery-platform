@@ -3,9 +3,9 @@ package GraphReader.graph;
 public class Edge {
 	private	int firstNodeId;
 	private	int secondNodeId;
-	private float EdgeLength;
+	private double EdgeLength;
 		
-	public Edge(int firstNodeId, int secondNodeId, float EdgeLength)
+	public Edge(int firstNodeId, int secondNodeId, double EdgeLength)
 	{
 		this.firstNodeId = firstNodeId;
 		this.secondNodeId = secondNodeId;
@@ -16,5 +16,5 @@ public class Edge {
 		
 	public int GetSecondNodeId() {return secondNodeId; }
 		
-	public float GetEdgeLength() {return EdgeLength; }
+	public double GetEdgeLength() {return EdgeLength; }
 }

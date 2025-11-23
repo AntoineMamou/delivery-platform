@@ -5,13 +5,17 @@ import java.util.ArrayList;
 import com.delivery.core.eventbus.EventBus;
 import com.delivery.core.eventbus.OptimizationRequest;
 import com.delivery.core.eventbus.OptimizationResult;
+import com.delivery.core.events.FetchGraphRequest;
+import com.delivery.core.events.GraphLoadedEvent;
 import com.delivery.core.model.Delivery;
 import com.delivery.core.model.Truck;
+import com.delivery.datafetcher.DataFetcherService;
 
 import GraphReader.graph.GraphView;
 import GraphReader.ui.DeliveriesPanel;
 import GraphReader.ui.TrucksPanel;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
@@ -49,9 +53,25 @@ public class MapCanvas extends Application {
             System.out.println("Deliveries: " + request.deliveries().size());
             System.out.println("Trucks: " + request.trucks().size());
         });
-
     	
+    	
+    	// Instancier graphView
     	GraphView graphView = new GraphView(SCENE_WIDTH * 0.8, SCENE_HEIGHT * 0.66, selectedNodeId, warehouseNodeId);
+
+    	// S'abonner à l'arrivée du graph
+    	eventBus.subscribe(GraphLoadedEvent.class, event -> {
+    	    System.out.println("GRAPH: " + event.graph());
+    	    Platform.runLater(() -> graphView.renderGraph(event.graph()));
+    	});
+
+    	// Démarrer le module data-fetcher
+    	DataFetcherService fetcher = new DataFetcherService(eventBus);
+    	fetcher.start();
+
+    	// Demander le graph dès que l’UI démarre
+    	eventBus.publish(new FetchGraphRequest());
+
+
         
         VBox deliveriesContainer = new DeliveriesPanel(SCENE_WIDTH * 0.33, SCENE_HEIGHT * 0.33, selectedNodeId);
         VBox trucksContainer = new TrucksPanel(SCENE_WIDTH * 0.33, SCENE_HEIGHT * 0.33);

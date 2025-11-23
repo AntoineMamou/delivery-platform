@@ -23,7 +23,12 @@
         <artifactId>core</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </dependency>
-</dependencies>
+    <dependency>
+    	<groupId>com.delivery</groupId>
+    	<artifactId>data-fetcher</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
 <build>
     <plugins>
         <plugin>
