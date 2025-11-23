@@ -2,7 +2,8 @@ package GraphReader.ui;
 
 import java.util.ArrayList;
 
-import GraphReader.model.Truck;
+import com.delivery.core.model.Truck;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
@@ -120,5 +121,9 @@ public class TrucksPanel extends VBox{
         
         truckCount.setValue(truckCount.get() + 1);
 	}
+	
+	public ArrayList<Truck> getTrucks() {
+        return new ArrayList<>(trucks); // return a copy
+    }
 
 }

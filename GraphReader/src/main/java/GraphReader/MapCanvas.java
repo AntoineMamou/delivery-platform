@@ -2,8 +2,13 @@ package GraphReader;
 
 import java.util.ArrayList;
 
+import com.delivery.core.eventbus.EventBus;
+import com.delivery.core.eventbus.OptimizationRequest;
+import com.delivery.core.eventbus.OptimizationResult;
+import com.delivery.core.model.Delivery;
+import com.delivery.core.model.Truck;
+
 import GraphReader.graph.GraphView;
-import GraphReader.model.Truck;
 import GraphReader.ui.DeliveriesPanel;
 import GraphReader.ui.TrucksPanel;
 import javafx.application.Application;
@@ -32,9 +37,19 @@ public class MapCanvas extends Application {
 	private IntegerProperty warehouseNodeId = new SimpleIntegerProperty(19);
 
 	public ArrayList<Truck> trucks = new ArrayList<>();
+	
+	private final EventBus eventBus = EventBus.getInstance();
+
 
     @Override
     public void start(Stage stage) {
+    	
+    	eventBus.subscribe(OptimizationRequest.class, request -> {
+            System.out.println("=== Event reçu ===");
+            System.out.println("Deliveries: " + request.deliveries().size());
+            System.out.println("Trucks: " + request.trucks().size());
+        });
+
     	
     	GraphView graphView = new GraphView(SCENE_WIDTH * 0.8, SCENE_HEIGHT * 0.66, selectedNodeId, warehouseNodeId);
         
@@ -49,6 +64,16 @@ public class MapCanvas extends Application {
         
         optimizeDeliveryRouteButton.setOnAction(e -> {
         	System.out.print("Optimizing delivery route");
+        	ArrayList<Delivery> deliveries = ((DeliveriesPanel) deliveriesContainer).getDeliveries();
+        	ArrayList<Truck> trucks = ((TrucksPanel) trucksContainer).getTrucks();
+        	
+        	OptimizationRequest request = new OptimizationRequest(
+        	        deliveries,
+        	        trucks,         
+        	        warehouseNodeId.get()
+        	    );
+
+        	eventBus.publish(request);
         });
         
         
@@ -85,6 +110,13 @@ public class MapCanvas extends Application {
         stage.setScene(scene);
         stage.setTitle("Delivery Simulator");
         stage.show();
+        
+        eventBus.subscribe(OptimizationResult.class, result -> {
+    	    finalPath.getItems().clear();
+    	    finalPath.getItems().addAll(result.readableSteps());
+    	});
+        
+        
     }
 
     public static void main(String[] args) {
