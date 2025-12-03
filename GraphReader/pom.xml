@@ -28,6 +28,11 @@
     	<artifactId>data-fetcher</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+    	<groupId>com.delivery</groupId>
+    	<artifactId>graph-reader</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 <build>
     <plugins>

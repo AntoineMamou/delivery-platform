@@ -1,9 +1,11 @@
 package GraphReader.graph;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.delivery.core.model.Graph;
-
+import com.delivery.core.model.*;
+import graph_reader.GraphReader;
 import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
@@ -18,11 +20,12 @@ public class GraphView extends Pane{
 	
 	private double width, height;
 	
-	private Node[] nodes;
-	private Edge[] edges;
+	private double containerWidth, containerHeight;
+	
+	private Graph graph;
 	
 	private Circle[] nodeCircles;
-	private Line[] edgeLines;
+	private Map<String, Line> edgeLines;
 	
 	private IntegerProperty selectedNodeId;
 	private IntegerProperty warehouseNodeId;
@@ -43,11 +46,15 @@ public class GraphView extends Pane{
 		
 		InitMouseEvents();
 	}
-
+	public void setGraph(Graph graph) { this.graph = graph; }
+	
+	public void setContainerWidth(double width) { containerWidth = width; }
+	
+	public void setContainerHeight(double height) { containerHeight = height; }
 	
 	public Circle[] getNodeCircles() { return nodeCircles; }
 	
-	public Line[] getEdgeLines() { return edgeLines; }
+	public Map<String, Line> getEdgeLines() { return edgeLines; }
 	
 	
 	private void InitMouseEvents()
@@ -83,9 +90,12 @@ public class GraphView extends Pane{
     {
     	double deltaX = event.getSceneX() - mouseOldX;
 		double deltaY = event.getSceneY() - mouseOldY;
+		
+		double translationX = getTranslateX() + deltaX;
+		double translationY = getTranslateY() + deltaY;
 	  
-		setTranslateX(getTranslateX() + deltaX);
-		setTranslateY(getTranslateY() + deltaY);
+		setTranslateX(translationX);
+		setTranslateY(translationY);
 	  
 		mouseOldX = event.getSceneX(); mouseOldY = event.getSceneY();
     }
@@ -117,6 +127,20 @@ public class GraphView extends Pane{
         setTranslateY(getTranslateY() + deltaY);
     }
     
+    public void displayPath(int[] path, Color color)
+    {
+    	for (int i = 0; i < path.length - 1; i++)
+    	{
+    		String key = path[i] + "_" + path[i + 1];
+            Line edgeLine = edgeLines.get(key);
+    	
+            if (edgeLine != null)
+                edgeLine.setStroke(color);
+            else 
+                System.err.println("Edge not found: " + key);
+    	}
+    }
+    
     private Line createEdgeLine(Circle c1, Circle c2) {
         Line line = new Line();
         line.startXProperty().bind(c1.centerXProperty());
@@ -128,22 +152,30 @@ public class GraphView extends Pane{
         return line;
     }
     
-    private Line[] createEdgeLines() {
-        edgeLines = new Line[edges.length];
-        
-        for (int i = 0; i < edges.length; i++)
-    	{
-    		edgeLines[i] = createEdgeLine(nodeCircles[edges[i].GetFirstNodeId()], nodeCircles[edges[i].GetSecondNodeId()]);
-    	}
-        return edgeLines;
+    private Map<String, Line> createEdgeLines() {
+    	List<Edge> edges = graph.getEdges();
+        Map<String, Line> edgeMap = new HashMap<>();
+
+        for (Edge edge : edges) {
+            Line line = createEdgeLine(
+                nodeCircles[edge.getSourceNodeId()],
+                nodeCircles[edge.getTargetNodeId()]
+            );
+
+            String key = edge.getSourceNodeId() + "_" + edge.getTargetNodeId();
+            edgeMap.put(key, line);
+        }
+
+        return edgeMap;
     }
     
     private Circle[] createNodeCircles()
     {
-    	nodeCircles = new Circle[nodes.length];
+    	List<Node> nodes = graph.getNodes();
+    	nodeCircles = new Circle[nodes.size()];
     	
-    	for (int i = 0; i < nodes.length; i++) {
-    	    nodeCircles[i] = new Circle(nodes[i].GetX(), nodes[i].GetY(), 20, Color.BLACK);
+    	for (int i = 0; i < nodes.size(); i++) {
+    	    nodeCircles[i] = new Circle(nodes.get(i).getX(), nodes.get(i).getY(), 20, Color.BLACK);
 
     	    final int index = i;
     	    nodeCircles[i].setOnMouseClicked(e -> handleNodeClick(index, nodeCircles));
@@ -154,31 +186,13 @@ public class GraphView extends Pane{
     	return nodeCircles;
     }
     
-    public void renderGraph(Graph graph) {
+    public void renderGraph() {
         getChildren().clear();
-        
-        //Convert core Nodes to GraphReader Nodes
-        List<com.delivery.core.model.Node> coreNodes = graph.nodes();
-        this.nodes = new GraphReader.graph.Node[coreNodes.size()];
-
-        for (int i = 0; i < coreNodes.size(); i++) {
-            com.delivery.core.model.Node n = coreNodes.get(i);
-            this.nodes[i] = new GraphReader.graph.Node(n.id(), n.x(), n.y());
-        }
-        
-        //Convert core Edges to GraphReader Edges
-        List<com.delivery.core.model.Edge> coreEdges = graph.edges();
-        this.edges = new GraphReader.graph.Edge[coreEdges.size()];
-
-        for (int i = 0; i < coreEdges.size(); i++) {
-            com.delivery.core.model.Edge e = coreEdges.get(i);
-            this.edges[i] = new GraphReader.graph.Edge(e.from(), e.to(), e.cost());
-        }
 
         nodeCircles = createNodeCircles();
         edgeLines = createEdgeLines();
 
-        getChildren().addAll(edgeLines);
+        getChildren().addAll(edgeLines.values());
         getChildren().addAll(nodeCircles);
     }
     
