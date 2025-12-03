@@ -27,5 +27,10 @@
             <version>5.10.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+        	<groupId>com.delivery</groupId>
+        	<artifactId>graph-reader</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
