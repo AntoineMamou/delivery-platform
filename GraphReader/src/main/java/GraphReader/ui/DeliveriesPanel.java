@@ -14,6 +14,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.converter.NumberStringConverter;
 
@@ -49,48 +50,56 @@ public class DeliveriesPanel extends VBox{
 
     }
 	
-	private VBox createDeliveryListBox()
-	{
-		VBox deliveriesViewBox = new VBox();
-		
-        deliveriesList = new ListView<>();
-        deliveriesList.setPrefWidth(width);
-        
-        ScrollPane deliveriesScroll = new ScrollPane(deliveriesList);
-        deliveriesScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        deliveriesScroll.setPrefWidth(width);
-        
-        deliveriesViewBox.getChildren().addAll(new Label("Deliveries"), deliveriesScroll);
-        
-        return deliveriesViewBox;
+	private VBox createDeliveryListBox() {
+	    VBox deliveriesViewBox = new VBox(5);
+	    deliveriesViewBox.setAlignment(Pos.TOP_CENTER);
+
+	    deliveriesList = new ListView<>();
+	    deliveriesList.setPrefWidth(width);
+
+	    // Make the ListView expand vertically
+	    VBox.setVgrow(deliveriesList, Priority.ALWAYS);
+
+	    deliveriesViewBox.getChildren().addAll(new Label("Deliveries"), deliveriesList);
+
+	    return deliveriesViewBox;
 	}
 	
-	private HBox createDeliveryInputBox()
-	{
-		IntegerProperty deliveryCount = new SimpleIntegerProperty(0);
-		
-		HBox deliveryInputBox = new HBox(5);
-		deliveryInputBox.setAlignment(Pos.CENTER);
+	private HBox createDeliveryInputBox() {
+	    IntegerProperty deliveryCount = new SimpleIntegerProperty(0);
 
-        TextField deliveryIdField = createIdField(deliveryCount);
-        TextField nodeIdField = createIdField(selectedNodeId);
+	    HBox deliveryInputBox = new HBox(10);
+	    deliveryInputBox.setAlignment(Pos.CENTER);
 
-        TextField earlyTimeField = createTimeField("08:00");
-        TextField lateTimeField = createTimeField("17:00");
+	    // Id field
+	    HBox idGroup = new HBox(5);
+	    idGroup.setAlignment(Pos.CENTER_LEFT);
+	    TextField deliveryIdField = createIdField(deliveryCount);
+	    idGroup.getChildren().addAll(new Label("Id:"), deliveryIdField);
 
-        Button addDeliveryButton = new Button("Add Delivery");
-        
-        addDeliveryButton.setOnAction(e -> addDelivery(deliveryCount, earlyTimeField.getText(), lateTimeField.getText()));
+	    // Address field
+	    HBox addressGroup = new HBox(5);
+	    addressGroup.setAlignment(Pos.CENTER_LEFT);
+	    TextField nodeIdField = createIdField(selectedNodeId);
+	    addressGroup.getChildren().addAll(new Label("Address:"), nodeIdField);
 
-        deliveryInputBox.getChildren().addAll(
-                new Label("Id:"), deliveryIdField,
-                new Label("Address:"), nodeIdField,
-                new Label("Delivery window:"), earlyTimeField,
-                new Label("to"), lateTimeField,
-                addDeliveryButton
-        );
-    
-        return deliveryInputBox;
+	    // Delivery window
+	    HBox deliveryWindowGroup = new HBox(5);
+	    deliveryWindowGroup.setAlignment(Pos.CENTER_LEFT);
+	    TextField earlyTimeField = createTimeField("08:00");
+	    TextField lateTimeField = createTimeField("17:00");
+	    deliveryWindowGroup.getChildren().addAll(new Label("Delivery window:"), earlyTimeField, new Label("to"), lateTimeField);
+
+	    // Add button
+	    HBox buttonGroup = new HBox();
+	    buttonGroup.setAlignment(Pos.CENTER);
+	    Button addDeliveryButton = new Button("Add Delivery");
+	    addDeliveryButton.setOnAction(e -> addDelivery(deliveryCount, earlyTimeField.getText(), lateTimeField.getText()));
+	    buttonGroup.getChildren().add(addDeliveryButton);
+
+	    deliveryInputBox.getChildren().addAll(idGroup, addressGroup, deliveryWindowGroup, buttonGroup);
+
+	    return deliveryInputBox;
 	}
 	
 	private void addDelivery(IntegerProperty deliveryCount, String earlyTimeString, String lateTimeString)
