@@ -16,5 +16,6 @@
   	<module>core</module>
   	<module>data-fetcher</module>
   	<module>GraphReader</module>
+  	<module>optimization</module>
   </modules>
 </project>

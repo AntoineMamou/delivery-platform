@@ -10,6 +10,7 @@ import com.delivery.core.events.GraphLoadedEvent;
 import com.delivery.core.model.Delivery;
 import com.delivery.core.model.Truck;
 import com.delivery.datafetcher.DataFetcherService;
+import com.delivery.optimization.OptimizerService;
 
 import GraphReader.graph.GraphView;
 import GraphReader.ui.DeliveriesPanel;
@@ -67,6 +68,10 @@ public class MapCanvas extends Application {
     	// Démarrer le module data-fetcher
     	DataFetcherService fetcher = new DataFetcherService(eventBus);
     	fetcher.start();
+    	
+    	//demarrer le service d'optimisation
+    	OptimizerService optimizer = new OptimizerService(eventBus);
+
 
     	// Demander le graph dès que l’UI démarre
     	eventBus.publish(new FetchGraphRequest());
