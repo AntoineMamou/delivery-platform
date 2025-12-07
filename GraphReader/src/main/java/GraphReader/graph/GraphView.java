@@ -48,6 +48,8 @@ public class GraphView extends Pane{
 	}
 	public void setGraph(Graph graph) { this.graph = graph; }
 	
+	public Graph getGraph() { return this.graph; }
+	
 	public void setContainerWidth(double width) { containerWidth = width; }
 	
 	public void setContainerHeight(double height) { containerHeight = height; }

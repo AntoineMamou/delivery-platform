@@ -8,6 +8,7 @@ import com.delivery.core.eventbus.OptimizationResult;
 import com.delivery.core.events.FetchGraphRequest;
 import com.delivery.core.events.GraphLoadedEvent;
 import com.delivery.core.model.Delivery;
+import com.delivery.core.model.Route;
 import com.delivery.core.model.Truck;
 import com.delivery.datafetcher.DataFetcherService;
 import com.delivery.optimization.OptimizerService;
@@ -120,7 +121,8 @@ public class MapCanvas extends Application {
             OptimizationRequest request = new OptimizationRequest(
                     deliveries,
                     trucks,
-                    warehouseNodeId.get()
+                    warehouseNodeId.get(),
+                    graphView.getGraph()
             );
 
             eventBus.publish(request);
@@ -159,11 +161,27 @@ public class MapCanvas extends Application {
         stage.setScene(scene);
         stage.setTitle("Delivery Simulator");
         stage.show();
-
+     
         eventBus.subscribe(OptimizationResult.class, result -> {
-            finalPath.getItems().clear();
-            finalPath.getItems().addAll(result.readableSteps());
+            Platform.runLater(() -> {
+                
+                // --- VUE 1 : Affichage par Camion (votre affichage actuel) ---
+                finalPath.getItems().clear();
+                for (Route route : result.routes()) {
+                     finalPath.getItems().add("CAMION " + route.getVehicle().getId());
+                     for (Delivery d : route.getDeliveries()) {
+                         finalPath.getItems().add("  -> " + d.getEstimatedArrivalTime() + " : Colis " + d.getId());
+                     }
+                }
+
+                // --- VUE 2 : Timeline Globale (pour Antoine) ---
+                System.out.println("--- TIMELINE GLOBALE ---");
+                for (Delivery d : result.chronologicalDeliveries()) {
+                    System.out.println(d.getEstimatedArrivalTime() + " : Livraison " + d.getId() + " (Noeud " + d.getAddressNodeId() + ")");
+                }
+            });
         });
+        
     }
 
     public static void main(String[] args) {
