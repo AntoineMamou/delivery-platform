@@ -1,6 +1,7 @@
 package GraphReader;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.delivery.core.eventbus.EventBus;
 import com.delivery.core.eventbus.OptimizationRequest;
@@ -8,6 +9,7 @@ import com.delivery.core.eventbus.OptimizationResult;
 import com.delivery.core.events.FetchGraphRequest;
 import com.delivery.core.events.GraphLoadedEvent;
 import com.delivery.core.model.Delivery;
+import com.delivery.core.model.Route;
 import com.delivery.core.model.Truck;
 import com.delivery.datafetcher.DataFetcherService;
 import com.delivery.optimization.OptimizerService;
@@ -84,8 +86,6 @@ public class MapCanvas extends Application {
         clipRect.widthProperty().bind(graphContainer.widthProperty());
         clipRect.heightProperty().bind(graphContainer.heightProperty());
         graphContainer.setClip(clipRect);
-
-        
         
         eventBus.subscribe(GraphLoadedEvent.class, event -> {
             System.out.println("GRAPH: " + event.graph());
@@ -106,7 +106,7 @@ public class MapCanvas extends Application {
 
         // Buttons
         Button setWarehouseNodeButton = new Button("Set warehouse location");
-        setWarehouseNodeButton.setOnAction(e -> SetWarehouseNode(graphView));
+        setWarehouseNodeButton.setOnAction(e -> graphView.setWarehouseNode());
         
         //demarrer le service d'optimisation
     	OptimizerService optimizer = new OptimizerService(eventBus);
@@ -124,10 +124,6 @@ public class MapCanvas extends Application {
             );
 
             eventBus.publish(request);
-            
-            int[] path = {0, 1, 6, 11, 16, 17, 19};
-            
-            graphView.displayPath(path, Color.GREEN);
         });
 
         // Bottom HBox for controls
@@ -163,6 +159,16 @@ public class MapCanvas extends Application {
         eventBus.subscribe(OptimizationResult.class, result -> {
             finalPath.getItems().clear();
             finalPath.getItems().addAll(result.readableSteps());
+            
+            //Oui je sais c'est degueux et harcode, mais c'est chiant de creer des routes a la main lol.
+            List<List<Integer>> routes = List.of(
+            	    List.of(0, 1, 7, 8, 14, 13),
+            	    List.of(0, 1, 6, 11, 16, 17, 13, 14),
+            	    List.of(0, 1, 2, 3, 4, 9, 14, 13, 18)
+            	);
+            
+            
+            graphView.testDisplayRoutes(routes);
         });
     }
 
@@ -172,16 +178,5 @@ public class MapCanvas extends Application {
     		);
     	
         launch();
-    }
-
-    private void SetWarehouseNode(GraphView graphView) {
-        if (selectedNodeId.get() != -1) {
-            // Set the old warehouseNode back to black
-            graphView.getNodeCircles()[warehouseNodeId.get()].setFill(Color.BLACK);
-
-            graphView.getNodeCircles()[selectedNodeId.get()].setFill(Color.RED);
-            warehouseNodeId.setValue(selectedNodeId.get());
-            selectedNodeId.setValue(-1);
-        }
     }
 }

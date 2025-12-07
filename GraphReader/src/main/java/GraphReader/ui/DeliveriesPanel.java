@@ -3,7 +3,10 @@ package GraphReader.ui;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
+import com.delivery.core.eventbus.DeliveryAddedEvent;
+import com.delivery.core.eventbus.EventBus;
 import com.delivery.core.model.Delivery;
+
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -11,12 +14,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.util.converter.NumberStringConverter;
 
 
 public class DeliveriesPanel extends VBox{
@@ -24,6 +25,8 @@ public class DeliveriesPanel extends VBox{
 	private IntegerProperty selectedNodeId;
 	
 	private double width, height;
+	
+	private int maxNodes;
 	
 	private ListView<String> deliveriesList;
 	
@@ -36,6 +39,11 @@ public class DeliveriesPanel extends VBox{
 		this.selectedNodeId = selectedNodeId;
 		
 		createDeliveriesPanel();
+	}
+	
+	public void setMaxNodes(int maxNodes)
+	{
+		this.maxNodes = maxNodes;
 	}
 	
 	private void createDeliveriesPanel() {
@@ -94,7 +102,7 @@ public class DeliveriesPanel extends VBox{
 	    HBox buttonGroup = new HBox();
 	    buttonGroup.setAlignment(Pos.CENTER);
 	    Button addDeliveryButton = new Button("Add Delivery");
-	    addDeliveryButton.setOnAction(e -> addDelivery(deliveryCount, earlyTimeField.getText(), lateTimeField.getText()));
+	    addDeliveryButton.setOnAction(e -> addDelivery(deliveryCount, Integer.parseInt(nodeIdField.getText()), earlyTimeField.getText(), lateTimeField.getText()));
 	    buttonGroup.getChildren().add(addDeliveryButton);
 
 	    deliveryInputBox.getChildren().addAll(idGroup, addressGroup, deliveryWindowGroup, buttonGroup);
@@ -102,21 +110,30 @@ public class DeliveriesPanel extends VBox{
 	    return deliveryInputBox;
 	}
 	
-	private void addDelivery(IntegerProperty deliveryCount, String earlyTimeString, String lateTimeString)
+	private void addDelivery(IntegerProperty deliveryCount, int addressId, String earlyTimeString, String lateTimeString)
 	{
-		// Data wasn't provided correctly, we dont create a delivery.
-        if (earlyTimeString.isEmpty() || lateTimeString.isEmpty() || selectedNodeId.get() == -1) return;
+		// Data wasn't provided correctly, we dont create a delivery.                //Change that to be modular
+        if (earlyTimeString.isEmpty() || lateTimeString.isEmpty() || addressId < 0 || addressId > 19) return;
         
         LocalTime earlyTime = getTimeFromString(earlyTimeString);
         LocalTime lateTime = getTimeFromString(lateTimeString);
-
-        Delivery delivery = new Delivery(deliveryCount.get(), selectedNodeId.get(), earlyTime, lateTime);
         
-        deliveriesList.getItems().add(delivery.toString());
-        
-        deliveryCount.setValue(deliveryCount.get() + 1);
+        try {
+        	validateTimeWindow(earlyTime, lateTime);
+        	
+        	Delivery delivery = new Delivery(deliveryCount.get(), addressId, earlyTime, lateTime);
             
-        deliveries.add(delivery);
+            deliveriesList.getItems().add(delivery.toString());
+            
+            //Increment delivery count
+            deliveryCount.setValue(deliveryCount.get() + 1);
+                
+            deliveries.add(delivery);
+            
+            EventBus.getInstance().publish(new DeliveryAddedEvent(addressId));
+        } catch (InvalidDeliveryWindowException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
 	}
 	
 	// Helper to create a validated time field
@@ -148,9 +165,14 @@ public class DeliveriesPanel extends VBox{
     private TextField createIdField(IntegerProperty boundNumber)
     {
     	TextField idField = new TextField();
-    	idField.textProperty().bindBidirectional(boundNumber, new NumberStringConverter());
+    	
+    	boundNumber.addListener((obs, oldV, newV) ->
+        idField.setText(newV.toString())
+    	);
+
+    	idField.setText(String.valueOf(boundNumber.get()));
+    	
     	idField.setPrefWidth(35);
-    	idField.setEditable(false);
     	return idField;
     }
     
@@ -167,6 +189,15 @@ public class DeliveriesPanel extends VBox{
         
         return time;
     	
+    }
+    
+    private void validateTimeWindow(LocalTime startTime, LocalTime endTime) throws InvalidDeliveryWindowException
+    {
+    	if (startTime.isAfter(endTime)) {
+            throw new InvalidDeliveryWindowException(
+                "Invalid delivery window: start time (" + startTime + ") cannot be after end time (" + endTime + ")"
+            );
+        }
     }
     
     public ArrayList<Delivery> getDeliveries() {
