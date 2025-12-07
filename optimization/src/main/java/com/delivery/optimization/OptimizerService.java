@@ -8,6 +8,7 @@ import com.delivery.core.eventbus.OptimizationResult;
 import com.delivery.core.model.Delivery;
 import com.delivery.core.model.Route;
 import com.delivery.core.model.Truck;
+import com.delivery.optimization.*;
 
 public class OptimizerService {
 
@@ -23,51 +24,27 @@ public class OptimizerService {
     }
 
     private void handleOptimization(OptimizationRequest request) {
+        System.out.println("[Optimizer] Calcul en cours...");
 
-        System.out.println("[Optimizer] OptimizationRequest recu.");
-
-        List<Route> routes = optimize(
+        // 1. Calculer les routes (Vue par Camion)
+        List<Route> routes = DeliveryOptimizer.optimize(
                 request.deliveries(),
                 request.trucks(),
-                request.warehouseNodeId()
+                request.warehouseNodeId(),
+                request.graph()
         );
         
-        // Conversion Route -> String
-        List<String> readableSteps = routes.stream()
-                .map(Route::toString) // ou un format personnalisé
+        // 2. Créer la liste chronologique globale (Vue Temporelle)
+        // On prend toutes les livraisons de toutes les routes, on les met à plat, et on trie par heure
+        List<Delivery> chronologicalDeliveries = routes.stream()
+                .flatMap(route -> route.getDeliveries().stream())
+                .sorted(Comparator.comparing(Delivery::getEstimatedArrivalTime)) // Trier par heure d'arrivée
                 .toList();
 
-        eventBus.publish(new OptimizationResult(readableSteps));
+        // 3. Publier le résultat structuré
+        eventBus.publish(new OptimizationResult(routes, chronologicalDeliveries));
     }
-    
-    
-    private List<Route> optimize(List<Delivery> deliveries, List<Truck> trucks, int warehouseId) {
-
-        List<Route> result = new ArrayList<>();
-
-        // Pour le moment : distribuer équitablement les livraisons entre les camions
-        int deliveriesPerTruck = (int) Math.ceil(deliveries.size() / (double) trucks.size());
-
-        int index = 0;
-
-        for (Truck truck : trucks) {
-
-            List<Delivery> assigned = new ArrayList<>();
-
-            for (int i = 0; i < deliveriesPerTruck && index < deliveries.size(); i++) {
-                assigned.add(deliveries.get(index++));
-            }
-
-            // Créer une "route"
-            Route r = new Route(truck, warehouseId, assigned);
-            result.add(r);
-        }
-
-        return result;
-    }
-
-    
-    
+ 
     
     
     

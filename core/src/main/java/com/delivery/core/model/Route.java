@@ -5,14 +5,17 @@ import java.util.List;
 public class Route {
     private Truck vehicle;
     private List<Delivery> deliveries;
+    private List<Integer> path;
 
-    public Route(Truck vehicle, int warehouseNodeId, List<Delivery> deliveries) {
+    public Route(Truck vehicle, int warehouseNodeId, List<Delivery> deliveries, List<Integer> path) {
         this.vehicle = vehicle;
         this.deliveries = deliveries;
+        this.path = path;
     }
 
     public Truck getVehicle() { return vehicle; }
     public List<Delivery> getDeliveries() { return deliveries; }
+    public List<Integer> getPath() { return path; }
     
     @Override
     public String toString() {

@@ -7,6 +7,9 @@ public class Delivery {
 	private int addressNodeId;
 	private LocalTime earliestDeliveryTime;
 	private LocalTime latestDeliveryTime;
+	private LocalTime estimatedArrivalTime;
+
+	
 	
 	public Delivery(int id, int addressNodeId, LocalTime earliestDeliveryTime, LocalTime latestDeliveryTime)
 	{
@@ -24,9 +27,13 @@ public class Delivery {
 	
 	public LocalTime getlatestDeliveryTime() { return latestDeliveryTime; }
 	
-	public String toString()
-	{
-		return String.format("Id: %d | Address: %d | Delivery window: %s to %s",
-                id, addressNodeId, earliestDeliveryTime, latestDeliveryTime);
+	public void setEstimatedArrivalTime(LocalTime time) { this.estimatedArrivalTime = time; }
+	public LocalTime getEstimatedArrivalTime() { return estimatedArrivalTime; }
+	
+	@Override
+	public String toString() {
+	    String timeStr = (estimatedArrivalTime != null) ? " [Prévu à " + estimatedArrivalTime + "]" : "";
+	    return String.format("Id: %d | Address: %d | Window: %s-%s%s",
+	            getId(), getAddressNodeId(), getEarliestDeliveryTime(), getlatestDeliveryTime(), timeStr);
 	}
 }
