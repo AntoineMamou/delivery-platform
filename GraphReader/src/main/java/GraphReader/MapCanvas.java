@@ -176,21 +176,10 @@ public class MapCanvas extends Application {
                     System.out.println(d.getEstimatedArrivalTime() + " : Livraison " + d.getId() + " (Noeud " + d.getAddressNodeId() + ")");
                 }
             });
-            
-            //Oui je sais c'est degueux et harcode, mais c'est chiant de creer des routes a la main lol.
-            /*List<List<Integer>> routes = List.of(
-            	    List.of(0, 1, 7, 8, 14, 13),
-            	    List.of(0, 1, 6, 11, 16, 17, 13, 14),
-            	    List.of(0, 1, 2, 3, 4, 9, 14, 13, 18)
-            	);*/
-           
+        
             List<Route> routes = result.routes();
-            List<List<Integer>> allRouteIds =
-                    routes.stream()
-                          .map(route -> route.getPath())
-                          .collect(Collectors.toList());
                                    
-            graphView.testDisplayRoutes(allRouteIds);
+            graphView.displayRoutes(routes);
         });
         
     }

@@ -172,6 +172,8 @@ public class GraphView extends Pane{
     
     public void displayRoutes(List<Route> routes)
     {
+    	routeLayer.getChildren().clear();
+    	
     	float lineWidth = CIRCLE_RADIUS / routes.size();
     	
     	for (int i = 0; i < routes.size(); i ++)
@@ -180,16 +182,14 @@ public class GraphView extends Pane{
     		
     		double offset = (i - (routes.size() - 1) / 2.0) * lineWidth;
     		
-    		List<Delivery> deliveries = routes.get(i).getDeliveries();
+    		List<Integer> route = routes.get(i).getPath();
     		
-    		 List<Line> lines = new ArrayList<>();
+    		List<Line> lines = new ArrayList<>();
     		 
-    		for (int d = 0; d < deliveries.size() - 1; d++)
+    		for (int d = 0; d < route.size() - 1; d++)
     		{
-    			Circle c1 = nodeCircles[deliveries.get(d).getAddressNodeId()];
-    			Circle c2 = nodeCircles[deliveries.get(d + 1).getAddressNodeId()];
-    			
-    			
+    			Circle c1 = nodeCircles[route.get(d)];
+    			Circle c2 = nodeCircles[route.get(d + 1)];
     			
     			Line line = new Line();
     			line.startXProperty().bind(
