@@ -2,7 +2,6 @@ package GraphReader;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.delivery.core.eventbus.EventBus;
 import com.delivery.core.eventbus.OptimizationRequest;
@@ -17,6 +16,8 @@ import com.delivery.optimization.OptimizerService;
 
 import GraphReader.graph.GraphView;
 import GraphReader.ui.DeliveriesPanel;
+import GraphReader.ui.DeliveryManager;
+import GraphReader.ui.TruckManager;
 import GraphReader.ui.TrucksPanel;
 import graph_reader.GraphReader;
 import javafx.application.Application;
@@ -62,7 +63,8 @@ public class MapCanvas extends Application {
             System.out.println("Trucks: " + request.trucks().size());
         });
 
-    	
+    	DeliveryManager.init();
+    	TruckManager.init();
     	
     	// Instancier graphView
     	GraphView graphView = new GraphView(SCENE_WIDTH * 0.8, SCENE_HEIGHT * 0.66, selectedNodeId, warehouseNodeId);
@@ -70,7 +72,7 @@ public class MapCanvas extends Application {
         // Root layout
         BorderPane root = new BorderPane();
 
-        StackPane graphContainer = new StackPane(graphView);
+        StackPane graphContainer = new StackPane();
         graphContainer.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, null)));
         graphContainer.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
         graphContainer.prefHeightProperty().bind(root.heightProperty().multiply(0.7));
@@ -87,19 +89,6 @@ public class MapCanvas extends Application {
         clipRect.widthProperty().bind(graphContainer.widthProperty());
         clipRect.heightProperty().bind(graphContainer.heightProperty());
         graphContainer.setClip(clipRect);
-        
-        eventBus.subscribe(GraphLoadedEvent.class, event -> {
-            System.out.println("GRAPH: " + event.graph());
-            Platform.runLater(() -> 
-            {
-            	graphView.setGraph(event.graph());
-            	graphView.renderGraph();
-            });
-        });
-
-        DataFetcherService fetcher = new DataFetcherService(eventBus);
-        fetcher.start();
-        eventBus.publish(new FetchGraphRequest());
 
         // Deliveries & trucks panels
         VBox deliveriesContainer = new DeliveriesPanel(SCENE_WIDTH * 0.33, SCENE_HEIGHT * 0.33, selectedNodeId);
@@ -109,14 +98,21 @@ public class MapCanvas extends Application {
         Button setWarehouseNodeButton = new Button("Set warehouse location");
         setWarehouseNodeButton.setOnAction(e -> graphView.setWarehouseNode());
         
+        StackPane.setAlignment(setWarehouseNodeButton, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(setWarehouseNodeButton, new Insets(10));
+        
+        graphContainer.getChildren().addAll(graphView, setWarehouseNodeButton);
+        
         //demarrer le service d'optimisation
     	OptimizerService optimizer = new OptimizerService(eventBus);
 
         Button optimizeDeliveryRouteButton = new Button("Optimize Delivery Route");
+        
+        optimizeDeliveryRouteButton.setPrefSize(SCENE_WIDTH * 0.2, SCENE_HEIGHT * 0.1);
         optimizeDeliveryRouteButton.setOnAction(e -> {
             System.out.print("Optimizing delivery route");
-            ArrayList<Delivery> deliveries = ((DeliveriesPanel) deliveriesContainer).getDeliveries();
-            ArrayList<Truck> trucks = ((TrucksPanel) trucksContainer).getTrucks();
+            ArrayList<Delivery> deliveries = DeliveryManager.getDeliveries();
+            ArrayList<Truck> trucks = TruckManager.getTrucks();
 
             OptimizationRequest request = new OptimizationRequest(
                     deliveries,
@@ -132,26 +128,41 @@ public class MapCanvas extends Application {
         HBox controlsBox = new HBox(10);
         controlsBox.setAlignment(Pos.CENTER_LEFT);
         controlsBox.setPadding(new Insets(5));
-        controlsBox.getChildren().addAll(deliveriesContainer, trucksContainer, setWarehouseNodeButton, optimizeDeliveryRouteButton);
+        controlsBox.getChildren().addAll(deliveriesContainer, trucksContainer, optimizeDeliveryRouteButton);
         controlsBox.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
         HBox.setHgrow(deliveriesContainer, Priority.ALWAYS);
         HBox.setHgrow(trucksContainer, Priority.ALWAYS);
 
         // Final path container (right)
         ListView<String> finalPath = new ListView<>();
-        finalPath.getItems().addAll("Delivery B, Truck A", "Delivery C, Truck C", "Delivery A, Truck B");
 
-        VBox finalPathContainer = new VBox(new Label("Final Path"), finalPath);
-        finalPathContainer.setAlignment(Pos.TOP_CENTER);
+        VBox finalPathContainer = new VBox(new Label("Delivery schedule"), finalPath);
         finalPathContainer.setSpacing(5);
-        finalPathContainer.prefWidthProperty().bind(root.widthProperty().multiply(0.3));
-        finalPathContainer.prefHeightProperty().bind(root.heightProperty());
-        finalPathContainer.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
+        finalPathContainer.setAlignment(Pos.TOP_CENTER);
+        finalPathContainer.setPrefWidth(SCENE_WIDTH * 0.25);
+        finalPathContainer.setBackground(new Background(
+            new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)
+        ));
+        
+        VBox.setVgrow(finalPath, Priority.ALWAYS);
 
         // Assemble root
         root.setCenter(graphContainer);
         root.setBottom(controlsBox);
         root.setRight(finalPathContainer);
+        
+        eventBus.subscribe(GraphLoadedEvent.class, event -> {
+            System.out.println("GRAPH: " + event.graph());
+            Platform.runLater(() -> 
+            {
+            	graphView.setGraph(event.graph());
+            	graphView.renderGraph();
+            });
+        });
+
+        DataFetcherService fetcher = new DataFetcherService(eventBus);
+        fetcher.start();
+        eventBus.publish(new FetchGraphRequest());
 
         Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT, Color.LIGHTGRAY);
         stage.setScene(scene);

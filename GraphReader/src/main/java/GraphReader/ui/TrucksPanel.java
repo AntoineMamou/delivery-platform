@@ -1,6 +1,10 @@
 package GraphReader.ui;
 
-import java.util.ArrayList;
+
+import com.delivery.core.eventbus.EventBus;
+import com.delivery.core.eventbus.TruckAddRequestEvent;
+import com.delivery.core.eventbus.TruckAddedEvent;
+import com.delivery.core.eventbus.TruckDeletedEvent;
 
 import com.delivery.core.model.Truck;
 
@@ -20,16 +24,38 @@ public class TrucksPanel extends VBox {
 
     private double width, height;
 
-    private ListView<String> trucksList;
-
-    private ArrayList<Truck> trucks = new ArrayList<>();
+    private ListView<ListItem> trucksList;
 
     public TrucksPanel(double width, double height) {
         this.width = width;
         this.height = height;
 
         createTrucksPanel();
+        
+        EventBus.getInstance().subscribe(TruckAddedEvent.class, event -> {
+        	addTruckListItem(event.truck());
+		});
+		
+		EventBus.getInstance().subscribe(TruckDeletedEvent.class, event -> {
+		    updateTruckList();
+		});
     }
+    
+    private void updateTruckList()
+	{
+		trucksList.getItems().clear();
+		
+		for (Truck truck : TruckManager.getTrucks())
+		{
+			addTruckListItem(truck);
+		}
+	}
+	
+	private void addTruckListItem(Truck truck) {
+		ListItem truckItem = new ListItem(truck.toString());
+		
+		trucksList.getItems().add(truckItem);
+	}
 
     private void createTrucksPanel() {
         setPrefSize(width, height);
@@ -45,7 +71,9 @@ public class TrucksPanel extends VBox {
         VBox truckListBox = new VBox(5);
         truckListBox.setAlignment(Pos.TOP_CENTER);
 
-        trucksList = new ListView<>();
+        trucksList = new ListView<ListItem>();
+	    
+	    trucksList.setCellFactory(param -> new TruckListCell()); 
         trucksList.setPrefWidth(width);
 
         // Make the ListView expand vertically
@@ -57,8 +85,6 @@ public class TrucksPanel extends VBox {
     }
 
     private HBox createTruckInputBox() {
-        IntegerProperty truckCount = new SimpleIntegerProperty(0);
-
         HBox truckInputBox = new HBox(10);
         truckInputBox.setAlignment(Pos.CENTER);
 
@@ -66,7 +92,7 @@ public class TrucksPanel extends VBox {
         HBox idGroup = new HBox(5);
         idGroup.setAlignment(Pos.CENTER_LEFT);
         TextField truckIdField = new TextField();
-        truckIdField.textProperty().bindBidirectional(truckCount, new NumberStringConverter());
+        truckIdField.textProperty().bindBidirectional(TruckManager.getTruckCount(), new NumberStringConverter());
         truckIdField.setPrefWidth(35);
         truckIdField.setEditable(false);
         idGroup.getChildren().addAll(new Label("Id:"), truckIdField);
@@ -87,7 +113,10 @@ public class TrucksPanel extends VBox {
         HBox buttonGroup = new HBox();
         buttonGroup.setAlignment(Pos.CENTER);
         Button addTruckButton = new Button("Add Truck");
-        addTruckButton.setOnAction(e -> addTruck(truckCount, deliveryCapacityField.getText(), maxDistanceField.getText()));
+        addTruckButton.setOnAction(e -> {
+        	EventBus.getInstance().publish(new TruckAddRequestEvent(deliveryCapacityField.getText(), maxDistanceField.getText()));
+        	System.out.println("Publishing truck add request event");
+        });
         buttonGroup.getChildren().add(addTruckButton);
 
         truckInputBox.getChildren().addAll(idGroup, capacityGroup, distanceGroup, buttonGroup);
@@ -106,26 +135,5 @@ public class TrucksPanel extends VBox {
         });
 
         return inputField;
-    }
-
-    private void addTruck(IntegerProperty truckCount, String deliveryCapacityString, String maxDistanceString) {
-        if (deliveryCapacityString.isEmpty() || maxDistanceString.isEmpty()) return;
-
-        int deliveryCapacity = Integer.parseInt(deliveryCapacityString);
-        float maxDistance = Float.parseFloat(maxDistanceString);
-
-        if (deliveryCapacity <= 0 || maxDistance <= 0) return;
-
-        Truck truck = new Truck(truckCount.get(), deliveryCapacity, maxDistance);
-
-        trucksList.getItems().add(truck.toString());
-
-        trucks.add(truck);
-
-        truckCount.setValue(truckCount.get() + 1);
-    }
-
-    public ArrayList<Truck> getTrucks() {
-        return new ArrayList<>(trucks); // return a copy
     }
 }

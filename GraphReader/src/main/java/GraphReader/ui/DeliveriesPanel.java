@@ -1,15 +1,12 @@
 package GraphReader.ui;
 
-import java.time.LocalTime;
-import java.util.ArrayList;
-
+import com.delivery.core.eventbus.DeliveryAddRequestEvent;
 import com.delivery.core.eventbus.DeliveryAddedEvent;
+import com.delivery.core.eventbus.DeliveryDeletedEvent;
 import com.delivery.core.eventbus.EventBus;
 import com.delivery.core.model.Delivery;
 
-
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -26,11 +23,7 @@ public class DeliveriesPanel extends VBox{
 	
 	private double width, height;
 	
-	private int maxNodes;
-	
-	private ListView<String> deliveriesList;
-	
-	private ArrayList<Delivery> deliveries = new ArrayList<>();
+	private ListView<ListItem> deliveriesList;
 	
 	public DeliveriesPanel(double width, double height, IntegerProperty selectedNodeId)
 	{
@@ -39,13 +32,32 @@ public class DeliveriesPanel extends VBox{
 		this.selectedNodeId = selectedNodeId;
 		
 		createDeliveriesPanel();
+		
+		EventBus.getInstance().subscribe(DeliveryAddedEvent.class, event -> {
+		    addDeliveryListItem(event.delivery());
+		});
+		
+		EventBus.getInstance().subscribe(DeliveryDeletedEvent.class, event -> {
+		    updateDeliveryList();
+		});
 	}
 	
-	public void setMaxNodes(int maxNodes)
+	private void updateDeliveryList()
 	{
-		this.maxNodes = maxNodes;
+		deliveriesList.getItems().clear();
+		
+		for (Delivery delivery : DeliveryManager.getDeliveries())
+		{
+			addDeliveryListItem(delivery);
+		}
 	}
 	
+	private void addDeliveryListItem(Delivery delivery) {
+		ListItem deliveryItem = new ListItem(delivery.toString());
+		
+		deliveriesList.getItems().add(deliveryItem);
+	}
+
 	private void createDeliveriesPanel() {
         setPrefSize(width, height);
         
@@ -62,7 +74,10 @@ public class DeliveriesPanel extends VBox{
 	    VBox deliveriesViewBox = new VBox(5);
 	    deliveriesViewBox.setAlignment(Pos.TOP_CENTER);
 
-	    deliveriesList = new ListView<>();
+	    deliveriesList = new ListView<ListItem>();
+	    
+	    deliveriesList.setCellFactory(param -> new DeliveryListCell()); 
+	    
 	    deliveriesList.setPrefWidth(width);
 
 	    // Make the ListView expand vertically
@@ -74,15 +89,13 @@ public class DeliveriesPanel extends VBox{
 	}
 	
 	private HBox createDeliveryInputBox() {
-	    IntegerProperty deliveryCount = new SimpleIntegerProperty(0);
-
 	    HBox deliveryInputBox = new HBox(10);
 	    deliveryInputBox.setAlignment(Pos.CENTER);
 
 	    // Id field
 	    HBox idGroup = new HBox(5);
 	    idGroup.setAlignment(Pos.CENTER_LEFT);
-	    TextField deliveryIdField = createIdField(deliveryCount);
+	    TextField deliveryIdField = createIdField(DeliveryManager.getDeliveryCount());
 	    idGroup.getChildren().addAll(new Label("Id:"), deliveryIdField);
 
 	    // Address field
@@ -102,40 +115,18 @@ public class DeliveriesPanel extends VBox{
 	    HBox buttonGroup = new HBox();
 	    buttonGroup.setAlignment(Pos.CENTER);
 	    Button addDeliveryButton = new Button("Add Delivery");
-	    addDeliveryButton.setOnAction(e -> addDelivery(deliveryCount, Integer.parseInt(nodeIdField.getText()), earlyTimeField.getText(), lateTimeField.getText()));
+	    addDeliveryButton.setOnAction(e -> {
+	    	EventBus.getInstance().publish(
+	    			new DeliveryAddRequestEvent(Integer.parseInt(nodeIdField.getText()), earlyTimeField.getText(), lateTimeField.getText())
+	    			);
+	    });
 	    buttonGroup.getChildren().add(addDeliveryButton);
 
 	    deliveryInputBox.getChildren().addAll(idGroup, addressGroup, deliveryWindowGroup, buttonGroup);
 
 	    return deliveryInputBox;
 	}
-	
-	private void addDelivery(IntegerProperty deliveryCount, int addressId, String earlyTimeString, String lateTimeString)
-	{
-		// Data wasn't provided correctly, we dont create a delivery.                //Change that to be modular
-        if (earlyTimeString.isEmpty() || lateTimeString.isEmpty() || addressId < 0 || addressId > 30) return;
-        
-        LocalTime earlyTime = getTimeFromString(earlyTimeString);
-        LocalTime lateTime = getTimeFromString(lateTimeString);
-        
-        try {
-        	validateTimeWindow(earlyTime, lateTime);
-        	
-        	Delivery delivery = new Delivery(deliveryCount.get(), addressId, earlyTime, lateTime);
-            
-            deliveriesList.getItems().add(delivery.toString());
-            
-            //Increment delivery count
-            deliveryCount.setValue(deliveryCount.get() + 1);
-                
-            deliveries.add(delivery);
-            
-            EventBus.getInstance().publish(new DeliveryAddedEvent(addressId));
-        } catch (InvalidDeliveryWindowException e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-	}
-	
+
 	// Helper to create a validated time field
     private TextField createTimeField(String defaultText)
     {
@@ -143,19 +134,21 @@ public class DeliveriesPanel extends VBox{
         textField.setPromptText("HH:mm");
         textField.setPrefWidth(60);
         
-        // Input validation: only allow digits and colon while typing.
-        // Regex explanation:
-        //   ([01]?\\d?|2[0-3]?)  -> allows 0-23 hours, optionally 1 or 2 digits
-        //   (:[0-5]?\\d?)?       -> optionally allows a colon followed by 0-59 minutes, optionally 1 or 2 digits
-        // On focus lost, we enforce full HH:mm format, where hours are 00-23 and minutes are 00-59.
+        // Input validation while typing:
+        // Allows:
+        //   1–2 digits
+        //   optional ":"
+        //   optional 1–2 digits
+        //
+        // Regex: "\\d{0,2}(:\\d{0,2})?"
+        //
+        // Explanation:
+        //   \\d{0,2}       -> up to 2 digits (hours)
+        //   (:\\d{0,2})?   -> optional ":" followed by up to 2 digits (minutes)
 
         textField.textProperty().addListener((obs, oldV, newV) -> {
-            if (!newV.matches("([01]?\\d?|2[0-3]?)(:[0-5]?\\d?)?")) textField.setText(oldV);
-        });
-
-        textField.focusedProperty().addListener((obs, oldF, isFocused) -> {
-            if (!isFocused && !textField.getText().matches("([01]\\d|2[0-3]):[0-5]\\d")) {
-            	textField.setText("");
+            if (!newV.matches("\\d{0,2}(:\\d{0,2})?")) {
+                textField.setText(oldV);
             }
         });
         
@@ -175,33 +168,4 @@ public class DeliveriesPanel extends VBox{
     	idField.setPrefWidth(35);
     	return idField;
     }
-    
-    private LocalTime getTimeFromString(String string)
-    {
-    	LocalTime time;
-    	
-    	if (string.length() < 5) return null;
-    	
-    	int hour = Integer.parseInt(string.substring(0, 2));
-        int minute = Integer.parseInt(string.substring(3, 5));
-            
-        time = LocalTime.of(hour, minute);
-        
-        return time;
-    	
-    }
-    
-    private void validateTimeWindow(LocalTime startTime, LocalTime endTime) throws InvalidDeliveryWindowException
-    {
-    	if (startTime.isAfter(endTime)) {
-            throw new InvalidDeliveryWindowException(
-                "Invalid delivery window: start time (" + startTime + ") cannot be after end time (" + endTime + ")"
-            );
-        }
-    }
-    
-    public ArrayList<Delivery> getDeliveries() {
-        return new ArrayList<>(deliveries); // return a copy
-    }
-
 }

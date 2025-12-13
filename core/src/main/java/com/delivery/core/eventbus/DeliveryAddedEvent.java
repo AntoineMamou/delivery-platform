@@ -1,3 +1,5 @@
 package com.delivery.core.eventbus;
 
-public record DeliveryAddedEvent(int nodeId) {}
+import com.delivery.core.model.Delivery;
+
+public record DeliveryAddedEvent(Delivery delivery) {}

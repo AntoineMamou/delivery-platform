@@ -14,6 +14,8 @@ public class Truck {
 	
 	public int getId() { return id; }
 	
+	public void setId(int id) { this.id = id; } 
+	
 	public int getDeliveryCapacity() { return deliveryCapacity; }
 	
 	public float getMaxDistance() { return maxDistance; }
