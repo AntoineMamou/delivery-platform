@@ -1,7 +1,8 @@
 package com.delivery.core.ports;
 
-import com.delivery.core.model.Delivery;
 import java.util.List;
+
+import com.delivery.core_model.Delivery;
 
 public interface DataFetcherPort {
     List<Delivery> fetchDeliveries();

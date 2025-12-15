@@ -1,3 +1,5 @@
-package com.delivery.core.eventbus;
+package com.delivery.core_model.events.deliveries;
 
-public record DeliveryDeletedEvent(int deliveryId) {}
+import java.util.List;
+
+public record OnUpdatedDeliveries(List<String> deliveryStrings) {}

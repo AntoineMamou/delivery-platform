@@ -1,3 +1,3 @@
-package com.delivery.core.events;
+package com.delivery.core_model.events.graph;
 
-public record FetchGraphRequest() {}
+public record OnFetchGraphRequest() {}

@@ -5,7 +5,7 @@
     <artifactId>delivery-platform</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>GraphReader</artifactId>
+  <artifactId>user-interface</artifactId>
   <dependencies>
     <dependency>
         <groupId>org.openjfx</groupId>
@@ -19,29 +19,15 @@
     </dependency>
     
     <dependency>
-        <groupId>com.delivery</groupId>
-        <artifactId>core</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    
-    <dependency>
-    	<groupId>com.delivery</groupId>
-    	<artifactId>data-fetcher</artifactId>
-    	<version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    
-    <dependency>
     	<groupId>com.delivery</groupId>
     	<artifactId>optimization</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </dependency>
-    
-     <dependency>
+    <dependency>
     	<groupId>com.delivery</groupId>
-    	<artifactId>graph-reader</artifactId>
+    	<artifactId>application</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </dependency>
-    
   </dependencies>
   
   
@@ -52,7 +38,7 @@
             <artifactId>javafx-maven-plugin</artifactId>
             <version>0.0.8</version>
             <configuration>
-                <mainClass>GraphReader.MapCanvas</mainClass>
+                <mainClass>user_interface.UserInterface</mainClass>
             </configuration>
         </plugin>
     </plugins>

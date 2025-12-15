@@ -1,4 +1,4 @@
-package GraphReader.ui;
+package com.delivery.core.managers.exceptions;
 
 public class InvalidDeliveryWindowException extends Exception {
 

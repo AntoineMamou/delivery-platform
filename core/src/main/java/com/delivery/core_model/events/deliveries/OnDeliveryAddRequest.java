@@ -1,3 +1,3 @@
-package com.delivery.core.eventbus;
+package com.delivery.core_model.events.deliveries;
 
-public record DeliveryAddRequestEvent(int addressId, String earlyTimeString, String lateTimeString) {}
+public record OnDeliveryAddRequest(int addressId, String earlyTimeString, String lateTimeString) {}

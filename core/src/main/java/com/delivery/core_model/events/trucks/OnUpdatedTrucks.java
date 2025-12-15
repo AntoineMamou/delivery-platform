@@ -1,3 +1,5 @@
-package com.delivery.core.eventbus;
+package com.delivery.core_model.events.trucks;
 
-public record TruckDeletedEvent(int truckId) {}
+import java.util.List;
+
+public record OnUpdatedTrucks(List<String> truckStrings) {}

@@ -1,7 +1,8 @@
 package com.delivery.core.ports;
 
-import com.delivery.core.model.Route;
 import java.util.List;
+
+import com.delivery.core_model.Route;
 
 public interface ModelBuilderPort {
     List<Route> buildRoutes();

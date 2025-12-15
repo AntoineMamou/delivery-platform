@@ -1,35 +1,21 @@
-package GraphReader;
+package user_interface;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import com.delivery.core.eventbus.EventBus;
-import com.delivery.core.eventbus.OptimizationRequest;
-import com.delivery.core.eventbus.OptimizationResult;
-import com.delivery.core.events.FetchGraphRequest;
-import com.delivery.core.events.GraphLoadedEvent;
-import com.delivery.core.model.Delivery;
-import com.delivery.core.model.Route;
-import com.delivery.core.model.Truck;
-import com.delivery.datafetcher.DataFetcherService;
-import com.delivery.optimization.OptimizerService;
+import com.delivery.core.ui.DeliveryOptimizerView;
+import com.delivery.core_model.Graph;
+import com.delivery.core_model.events.OnOptimizationResult;
+import com.delivery.core_model.events.deliveries.OnUpdatedDeliveries;
+import com.delivery.core_model.events.trucks.OnUpdatedTrucks;
 
-import GraphReader.graph.GraphView;
-import GraphReader.ui.DeliveriesPanel;
-import GraphReader.ui.DeliveryManager;
-import GraphReader.ui.TruckManager;
-import GraphReader.ui.TrucksPanel;
-import graph_reader.GraphReader;
+import application.DeliveryOptimizerApp;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -39,167 +25,128 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import user_interface.components.DeliveriesPanel;
+import user_interface.components.DeliverySchedulePanel;
+import user_interface.components.GraphView;
+import user_interface.components.TrucksPanel;
 
-public class MapCanvas extends Application {
+public class UserInterface extends Application implements DeliveryOptimizerView{
+	
+	private DeliveryOptimizerApp app;
 
-    public final int SCENE_WIDTH = 1500;
-    public final int SCENE_HEIGHT = 800;
+    public final double SCENE_WIDTH = UI.Sizes.WINDOW_WIDTH;
+    public final double SCENE_HEIGHT = UI.Sizes.WINDOW_HEIGHT;
 
     private IntegerProperty selectedNodeId = new SimpleIntegerProperty(-1);
-    private IntegerProperty warehouseNodeId = new SimpleIntegerProperty(19);
+    private IntegerProperty warehouseNodeId = new SimpleIntegerProperty(0);
+    
+    private GraphView graphView;
+    private Button optimizeDeliveryRouteButton;
+    private DeliverySchedulePanel deliverySchedulePanel;
+    
+    private EventBus eventBus = EventBus.getInstance();
+    
+    @Override
+	public void showOptimizationResult(OnOptimizationResult result) {
+    	deliverySchedulePanel.updateSchedule(result);
+	}
 
-    public ArrayList<Truck> trucks = new ArrayList<>();
+	@Override
+	public void setOptimizeAction(Runnable action) {
+		optimizeDeliveryRouteButton.setOnAction(e -> action.run());
+	}
 
-    private final EventBus eventBus = EventBus.getInstance();
+	@Override
+	public int getWarehouseNodeId() {
+		return warehouseNodeId.get();
+	}
+
+	@Override
+	public Graph getGraph() {
+		return graphView.getGraph();
+	}
 
     @Override
-    public void start(Stage stage) {
-
-        eventBus.subscribe(OptimizationRequest.class, request -> {
-            System.out.println("=== Event reçu ===");
-            System.out.println("Deliveries: " + request.deliveries().size());
-            System.out.println("Trucks: " + request.trucks().size());
-        });
-
-    	DeliveryManager.init();
-    	TruckManager.init();
-    	
-    	// Instancier graphView
-    	GraphView graphView = new GraphView(SCENE_WIDTH * 0.8, SCENE_HEIGHT * 0.66, selectedNodeId, warehouseNodeId);
-
-        // Root layout
+    public void start(Stage stage) {	 
+    	// Root layout
         BorderPane root = new BorderPane();
+        
+        //GraphView
+    	graphView = new GraphView(EventBus.getInstance(), selectedNodeId, warehouseNodeId);
 
         StackPane graphContainer = new StackPane();
         graphContainer.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, null)));
-        graphContainer.prefWidthProperty().bind(root.widthProperty().multiply(0.7));
-        graphContainer.prefHeightProperty().bind(root.heightProperty().multiply(0.7));
-        
-        graphView.setContainerWidth(SCENE_WIDTH * 0.7);
-        graphView.setContainerHeight(SCENE_HEIGHT * 0.7);
-        
-        graphContainer.widthProperty().addListener((obs, oldVal, newVal) -> 
-        graphView.setContainerWidth(newVal.doubleValue()));
-        graphContainer.heightProperty().addListener((obs, oldVal, newVal) -> 
-        graphView.setContainerHeight(newVal.doubleValue()));
-        
-        Rectangle clipRect = new Rectangle();
-        clipRect.widthProperty().bind(graphContainer.widthProperty());
-        clipRect.heightProperty().bind(graphContainer.heightProperty());
-        graphContainer.setClip(clipRect);
+        graphContainer.prefWidthProperty().bind(root.widthProperty().multiply(UI.SizeRatios.GRAPH_WIDTH_RATIO));
+        graphContainer.prefHeightProperty().bind(root.heightProperty().multiply(UI.SizeRatios.GRAPH_HEIGHT_RATIO));
 
-        // Deliveries & trucks panels
-        VBox deliveriesContainer = new DeliveriesPanel(SCENE_WIDTH * 0.33, SCENE_HEIGHT * 0.33, selectedNodeId);
-        VBox trucksContainer = new TrucksPanel(SCENE_WIDTH * 0.33, SCENE_HEIGHT * 0.33);
+        // Deliveries and trucks panels
+        DeliveriesPanel deliveriesPanel = new DeliveriesPanel(EventBus.getInstance(), selectedNodeId);
+        deliveriesPanel.prefWidthProperty().bind(root.widthProperty().multiply(UI.SizeRatios.PANEL_WIDTH_RATIO));
+        deliveriesPanel.prefHeightProperty().bind(root.heightProperty().multiply(UI.SizeRatios.PANEL_HEIGHT_RATIO));
+        
+        TrucksPanel trucksPanel = new TrucksPanel(EventBus.getInstance());
+        trucksPanel.prefWidthProperty().bind(root.widthProperty().multiply(UI.SizeRatios.PANEL_WIDTH_RATIO));
+        trucksPanel.prefHeightProperty().bind(root.heightProperty().multiply(UI.SizeRatios.PANEL_HEIGHT_RATIO));
 
-        // Buttons
+        // Warehouse button
         Button setWarehouseNodeButton = new Button("Set warehouse location");
         setWarehouseNodeButton.setOnAction(e -> graphView.setWarehouseNode());
         
         StackPane.setAlignment(setWarehouseNodeButton, Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(setWarehouseNodeButton, new Insets(10));
+        StackPane.setMargin(setWarehouseNodeButton, UI.InsetsValues.MEDIUM);
         
         graphContainer.getChildren().addAll(graphView, setWarehouseNodeButton);
-        
-        //demarrer le service d'optimisation
-    	OptimizerService optimizer = new OptimizerService(eventBus);
 
-        Button optimizeDeliveryRouteButton = new Button("Optimize Delivery Route");
-        
-        optimizeDeliveryRouteButton.setPrefSize(SCENE_WIDTH * 0.2, SCENE_HEIGHT * 0.1);
-        optimizeDeliveryRouteButton.setOnAction(e -> {
-            System.out.print("Optimizing delivery route");
-            ArrayList<Delivery> deliveries = DeliveryManager.getDeliveries();
-            ArrayList<Truck> trucks = TruckManager.getTrucks();
-
-            OptimizationRequest request = new OptimizationRequest(
-                    deliveries,
-                    trucks,
-                    warehouseNodeId.get(),
-                    graphView.getGraph()
-            );
-
-            eventBus.publish(request);
-        });
+        //OptimizeRoute button
+        optimizeDeliveryRouteButton = new Button("Optimize Delivery Route");
+        optimizeDeliveryRouteButton.prefWidthProperty().bind(root.widthProperty().multiply(UI.SizeRatios.BUTTON_WIDTH_RATIO));
+        optimizeDeliveryRouteButton.prefHeightProperty().bind(root.heightProperty().multiply(UI.SizeRatios.BUTTON_HEIGHT_RATIO));
 
         // Bottom HBox for controls
         HBox controlsBox = new HBox(10);
         controlsBox.setAlignment(Pos.CENTER_LEFT);
-        controlsBox.setPadding(new Insets(5));
-        controlsBox.getChildren().addAll(deliveriesContainer, trucksContainer, optimizeDeliveryRouteButton);
+        controlsBox.setPadding(UI.InsetsValues.SMALL);
+        controlsBox.getChildren().addAll(deliveriesPanel, trucksPanel, optimizeDeliveryRouteButton);
         controlsBox.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
-        HBox.setHgrow(deliveriesContainer, Priority.ALWAYS);
-        HBox.setHgrow(trucksContainer, Priority.ALWAYS);
+        HBox.setHgrow(deliveriesPanel, Priority.ALWAYS);
+        HBox.setHgrow(trucksPanel, Priority.ALWAYS);
 
-        // Final path container (right)
-        ListView<String> finalPath = new ListView<>();
-
-        VBox finalPathContainer = new VBox(new Label("Delivery schedule"), finalPath);
-        finalPathContainer.setSpacing(5);
-        finalPathContainer.setAlignment(Pos.TOP_CENTER);
-        finalPathContainer.setPrefWidth(SCENE_WIDTH * 0.25);
-        finalPathContainer.setBackground(new Background(
-            new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)
-        ));
+        // DeliverySchedule
+        deliverySchedulePanel = new DeliverySchedulePanel();
+      
+        deliverySchedulePanel.prefWidthProperty().bind(root.widthProperty().multiply(UI.SizeRatios.SCHEDULE_WIDTH_RATIO));
         
-        VBox.setVgrow(finalPath, Priority.ALWAYS);
+        VBox.setVgrow(deliverySchedulePanel, Priority.ALWAYS);
 
         // Assemble root
         root.setCenter(graphContainer);
         root.setBottom(controlsBox);
-        root.setRight(finalPathContainer);
-        
-        eventBus.subscribe(GraphLoadedEvent.class, event -> {
-            System.out.println("GRAPH: " + event.graph());
-            Platform.runLater(() -> 
-            {
-            	graphView.setGraph(event.graph());
-            	graphView.renderGraph();
-            });
-        });
-
-        DataFetcherService fetcher = new DataFetcherService(eventBus);
-        fetcher.start();
-        eventBus.publish(new FetchGraphRequest());
+        root.setRight(deliverySchedulePanel);
 
         Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT, Color.LIGHTGRAY);
         stage.setScene(scene);
         stage.setTitle("Delivery Simulator");
         stage.show();
-     
-        eventBus.subscribe(OptimizationResult.class, result -> {
-            Platform.runLater(() -> {
-                
-                // --- VUE 1 : Affichage par Camion (votre affichage actuel) ---
-                finalPath.getItems().clear();
-                for (Route route : result.routes()) {
-                     finalPath.getItems().add("CAMION " + route.getVehicle().getId());
-                     for (Delivery d : route.getDeliveries()) {
-                         finalPath.getItems().add("  -> " + d.getEstimatedArrivalTime() + " : Colis " + d.getId());
-                     }
-                }
-
-                // --- VUE 2 : Timeline Globale (pour Antoine) ---
-                System.out.println("--- TIMELINE GLOBALE ---");
-                for (Delivery d : result.chronologicalDeliveries()) {
-                    System.out.println(d.getEstimatedArrivalTime() + " : Livraison " + d.getId() + " (Noeud " + d.getAddressNodeId() + ")");
-                }
-            });
         
-            List<Route> routes = result.routes();
-                                   
-            graphView.displayRoutes(routes);
-        });
+        app = new DeliveryOptimizerApp(eventBus, this);
+        app.start();
         
+        subscribeToEvents(deliveriesPanel, trucksPanel);
     }
 
     public static void main(String[] args) {
-    	System.out.println(
-    		    GraphReader.class.getClassLoader().getResource("graph.json")
-    		);
+    	launch();
+    }
+    
+    private void subscribeToEvents(DeliveriesPanel deliveriesPanel, TrucksPanel trucksPanel)
+    {
+    	eventBus.subscribe(OnUpdatedDeliveries.class, event -> {
+		    deliveriesPanel.updateDeliveryList(event.deliveryStrings());
+		});
     	
-        launch();
+    	eventBus.subscribe(OnUpdatedTrucks.class, event -> {
+		    trucksPanel.updateTruckList(event.truckStrings());
+		});
     }
 }

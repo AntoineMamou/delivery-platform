@@ -1,12 +1,12 @@
-package com.delivery.core.eventbus;
+package com.delivery.core_model.events;
 
 import java.util.List;
 
-import com.delivery.core.model.Delivery;
-import com.delivery.core.model.Graph;
-import com.delivery.core.model.Truck;
+import com.delivery.core_model.Delivery;
+import com.delivery.core_model.Graph;
+import com.delivery.core_model.Truck;
 
-public record OptimizationRequest(
+public record OnOptimizationRequest(
     List<Delivery> deliveries,
     List<Truck> trucks,
     int warehouseNodeId,

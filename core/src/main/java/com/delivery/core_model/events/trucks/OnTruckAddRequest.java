@@ -1,3 +1,3 @@
-package com.delivery.core.eventbus;
+package com.delivery.core_model.events.trucks;
 
-public record TruckAddRequestEvent(String deliveryCapacityString, String maxDistanceString) {}
+public record OnTruckAddRequest(String deliveryCapacityString, String maxDistanceString) {}

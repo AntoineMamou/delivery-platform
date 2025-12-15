@@ -1,7 +1,7 @@
 package com.delivery.core.service;
 
 import com.delivery.core.eventbus.EventBus;
-import com.delivery.core.eventbus.OptimizationRequest;
+import com.delivery.core_model.events.OnOptimizationRequest;
 
 public class CoreService {
 
@@ -13,7 +13,7 @@ public class CoreService {
     }
 
     private void subscribeEvents() {
-        eventBus.subscribe(OptimizationRequest.class, request -> {
+        eventBus.subscribe(OnOptimizationRequest.class, request -> {
             System.out.println("[Core] OptimizationRequest reçu");
             System.out.println("Deliveries: " + request.deliveries().size());
             System.out.println("Trucks: " + request.trucks().size());

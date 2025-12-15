@@ -1,4 +1,4 @@
-package com.delivery.core.model;
+package com.delivery.core_model;
 
 public class Truck {
 	private int id;

@@ -1,9 +1,9 @@
-package com.delivery.core.eventbus;
+package com.delivery.core_model.events;
 
 import java.util.List;
 
-import com.delivery.core.model.Delivery;
-import com.delivery.core.model.Route;
+import com.delivery.core_model.Delivery;
+import com.delivery.core_model.Route;
 
 
-public record OptimizationResult(List<Route> routes, List<Delivery> chronologicalDeliveries) {}
+public record OnOptimizationResult(List<Route> routes, List<Delivery> chronologicalDeliveries) {}

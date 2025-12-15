@@ -1,11 +1,14 @@
-package GraphReader.ui;
+package user_interface.components;
 
-import com.delivery.core.eventbus.DeliveryAddRequestEvent;
-import com.delivery.core.eventbus.DeliveryAddedEvent;
-import com.delivery.core.eventbus.DeliveryDeletedEvent;
+import java.util.List;
+
 import com.delivery.core.eventbus.EventBus;
-import com.delivery.core.model.Delivery;
+import com.delivery.core.managers.DeliveryManager;
+import com.delivery.core_model.events.deliveries.OnDeliveryAddRequest;
+import com.delivery.core_model.events.deliveries.OnDeliveryDeleteRequest;
+import com.delivery.core_model.events.deliveries.OnUpdatedDeliveries;
 
+import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -15,52 +18,31 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import user_interface.UI;
 
 
 public class DeliveriesPanel extends VBox{
 	
 	private IntegerProperty selectedNodeId;
 	
-	private double width, height;
+	private ListView<String> deliveriesList;
 	
-	private ListView<ListItem> deliveriesList;
+	private EventBus eventBus;
 	
-	public DeliveriesPanel(double width, double height, IntegerProperty selectedNodeId)
+	public DeliveriesPanel(EventBus eventBus, IntegerProperty selectedNodeId)
 	{
-		this.width = width;
-		this.height = height;
 		this.selectedNodeId = selectedNodeId;
+		this.eventBus = eventBus;
 		
 		createDeliveriesPanel();
-		
-		EventBus.getInstance().subscribe(DeliveryAddedEvent.class, event -> {
-		    addDeliveryListItem(event.delivery());
-		});
-		
-		EventBus.getInstance().subscribe(DeliveryDeletedEvent.class, event -> {
-		    updateDeliveryList();
-		});
 	}
 	
-	private void updateDeliveryList()
+	public void updateDeliveryList(List<String> deliveryStrings)
 	{
-		deliveriesList.getItems().clear();
-		
-		for (Delivery delivery : DeliveryManager.getDeliveries())
-		{
-			addDeliveryListItem(delivery);
-		}
-	}
-	
-	private void addDeliveryListItem(Delivery delivery) {
-		ListItem deliveryItem = new ListItem(delivery.toString());
-		
-		deliveriesList.getItems().add(deliveryItem);
+		deliveriesList.getItems().setAll(deliveryStrings);
 	}
 
 	private void createDeliveriesPanel() {
-        setPrefSize(width, height);
-        
         VBox deliveryListBox = createDeliveryListBox();
         
         HBox deliveryInputBox = createDeliveryInputBox();
@@ -71,14 +53,15 @@ public class DeliveriesPanel extends VBox{
     }
 	
 	private VBox createDeliveryListBox() {
-	    VBox deliveriesViewBox = new VBox(5);
+	    VBox deliveriesViewBox = new VBox(UI.Spacing.SMALL);
 	    deliveriesViewBox.setAlignment(Pos.TOP_CENTER);
 
-	    deliveriesList = new ListView<ListItem>();
+	    deliveriesList = new ListView<String>();
 	    
-	    deliveriesList.setCellFactory(param -> new DeliveryListCell()); 
-	    
-	    deliveriesList.setPrefWidth(width);
+	    deliveriesList.setCellFactory(listView ->
+	    new PanelListCell<String>(index -> 
+	        EventBus.getInstance().publish(new OnDeliveryDeleteRequest(index)))
+	);
 
 	    // Make the ListView expand vertically
 	    VBox.setVgrow(deliveriesList, Priority.ALWAYS);
@@ -89,37 +72,51 @@ public class DeliveriesPanel extends VBox{
 	}
 	
 	private HBox createDeliveryInputBox() {
-	    HBox deliveryInputBox = new HBox(10);
+	    HBox deliveryInputBox = new HBox(UI.Spacing.MEDIUM);
 	    deliveryInputBox.setAlignment(Pos.CENTER);
 
 	    // Id field
-	    HBox idGroup = new HBox(5);
+	    HBox idGroup = new HBox(UI.Spacing.SMALL);
 	    idGroup.setAlignment(Pos.CENTER_LEFT);
-	    TextField deliveryIdField = createIdField(DeliveryManager.getDeliveryCount());
+	    
+	    TextField deliveryIdField = new TextField(String.valueOf(DeliveryManager.getDeliveryCount()));
+	    
+	    // Bind truckIdField to update when deliveries are updated
+	    eventBus.subscribe(OnUpdatedDeliveries.class, event -> {
+            Platform.runLater(() -> deliveryIdField.setText(String.valueOf(event.deliveryStrings().size())));
+        });
+	    
+	    deliveryIdField.setPrefWidth(UI.Sizes.FIELD_SMALL);
 	    idGroup.getChildren().addAll(new Label("Id:"), deliveryIdField);
 
 	    // Address field
-	    HBox addressGroup = new HBox(5);
+	    HBox addressGroup = new HBox(UI.Spacing.SMALL);
 	    addressGroup.setAlignment(Pos.CENTER_LEFT);
+	    
 	    TextField nodeIdField = createIdField(selectedNodeId);
 	    addressGroup.getChildren().addAll(new Label("Address:"), nodeIdField);
 
 	    // Delivery window
-	    HBox deliveryWindowGroup = new HBox(5);
+	    HBox deliveryWindowGroup = new HBox(UI.Spacing.SMALL);
 	    deliveryWindowGroup.setAlignment(Pos.CENTER_LEFT);
+	    
 	    TextField earlyTimeField = createTimeField("08:00");
 	    TextField lateTimeField = createTimeField("17:00");
+	    
 	    deliveryWindowGroup.getChildren().addAll(new Label("Delivery window:"), earlyTimeField, new Label("to"), lateTimeField);
 
 	    // Add button
 	    HBox buttonGroup = new HBox();
 	    buttonGroup.setAlignment(Pos.CENTER);
+	    
 	    Button addDeliveryButton = new Button("Add Delivery");
+	    
 	    addDeliveryButton.setOnAction(e -> {
-	    	EventBus.getInstance().publish(
-	    			new DeliveryAddRequestEvent(Integer.parseInt(nodeIdField.getText()), earlyTimeField.getText(), lateTimeField.getText())
+	    	eventBus.publish(
+	    			new OnDeliveryAddRequest(Integer.parseInt(nodeIdField.getText()), earlyTimeField.getText(), lateTimeField.getText())
 	    			);
 	    });
+	    
 	    buttonGroup.getChildren().add(addDeliveryButton);
 
 	    deliveryInputBox.getChildren().addAll(idGroup, addressGroup, deliveryWindowGroup, buttonGroup);
@@ -132,7 +129,7 @@ public class DeliveriesPanel extends VBox{
     {
         TextField textField = new TextField(defaultText);
         textField.setPromptText("HH:mm");
-        textField.setPrefWidth(60);
+        textField.setPrefWidth(UI.Sizes.FIELD_LARGE);
         
         // Input validation while typing:
         // Allows:
@@ -165,7 +162,7 @@ public class DeliveriesPanel extends VBox{
 
     	idField.setText(String.valueOf(boundNumber.get()));
     	
-    	idField.setPrefWidth(35);
+    	idField.setPrefWidth(UI.Sizes.FIELD_SMALL);
     	return idField;
     }
 }

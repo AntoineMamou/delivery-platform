@@ -1,31 +1,20 @@
 package com.delivery.datafetcher;
 
-import com.delivery.core.eventbus.EventBus;
-import com.delivery.core.events.FetchGraphRequest;
-import com.delivery.core.events.GraphLoadedEvent;
-import com.delivery.core.model.Graph;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
-import graph_reader.GraphReader;
+import com.delivery.core.ports.GraphFetcherPort;
+import com.delivery.core_model.Graph;
+import com.google.gson.Gson;
 
-public class DataFetcherService {
+public class GraphFetcherService implements GraphFetcherPort{
 
-	private final EventBus eventBus;
+	private final Gson gson = new Gson();
 
-	public DataFetcherService(EventBus eventBus) {
-		this.eventBus = eventBus;
-	}
-
-	public void start() {
-
-		// Abonnement à la demande de chargement du graph
-		eventBus.subscribe(FetchGraphRequest.class, request -> {
-			System.out.println("[DataFetcher] FetchGraphRequest reçu");
-
-			Graph graph = GraphReader.readGraph("graph.json");
-			System.out.println("[DataFetcher] Graph chargé, publication de GraphLoadedEvent");
-
-			// Publication de l'évènement vers les autres modules
-			eventBus.publish(new GraphLoadedEvent(graph));
-		});
+	@Override
+	public Graph fetchGraph(String resourceName) {
+		InputStream is = getClass().getClassLoader().getResourceAsStream(resourceName);
+        if (is == null) throw new RuntimeException("Resource not found: " + resourceName);
+        return gson.fromJson(new InputStreamReader(is), Graph.class);
 	}
 }

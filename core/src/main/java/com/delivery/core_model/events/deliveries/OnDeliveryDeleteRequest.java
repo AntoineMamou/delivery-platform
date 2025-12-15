@@ -1,3 +1,3 @@
-package com.delivery.core.eventbus;
+package com.delivery.core_model.events.deliveries;
 
-public record DeliveryDeleteRequestEvent(int id) {}
+public record OnDeliveryDeleteRequest(int id) {}

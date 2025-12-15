@@ -1,3 +1,3 @@
-package com.delivery.core.eventbus;
+package com.delivery.core_model.events.trucks;
 
-public record TruckDeleteRequestEvent(int id) {}
+public record OnTruckDeleteRequest(int id) {}
