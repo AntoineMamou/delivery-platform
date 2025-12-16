@@ -1,4 +1,4 @@
-package com.delivery.core.model;
+package com.delivery.core_model;
 
 import java.time.*;
 
@@ -21,6 +21,8 @@ public class Delivery {
 	
 	public int getId() { return id; }
 	
+	public void setId(int id) { this.id = id; }
+	
 	public int getAddressNodeId() { return addressNodeId; }
 	
 	public LocalTime getEarliestDeliveryTime() { return earliestDeliveryTime; }
@@ -32,7 +34,7 @@ public class Delivery {
 	
 	@Override
 	public String toString() {
-	    String timeStr = (estimatedArrivalTime != null) ? " [Prévu à " + estimatedArrivalTime + "]" : "";
+	    String timeStr = (estimatedArrivalTime != null) ? " [Estimated delivery time: " + estimatedArrivalTime + "]" : "";
 	    return String.format("Id: %d | Address: %d | Window: %s-%s%s",
 	            getId(), getAddressNodeId(), getEarliestDeliveryTime(), getlatestDeliveryTime(), timeStr);
 	}

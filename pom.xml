@@ -18,8 +18,8 @@
   <modules>
   	<module>core</module>
   	<module>data-fetcher</module>
-  	<module>GraphReader</module>
+  	<module>user-interface</module>
   	<module>optimization</module>
-  	<module>graph-reader</module>
+  	<module>application</module>
   </modules>
 </project>

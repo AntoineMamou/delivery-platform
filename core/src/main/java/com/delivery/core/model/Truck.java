@@ -1,4 +1,4 @@
-package com.delivery.core.model;
+package com.delivery.core_model;
 
 public class Truck {
 	private int id;
@@ -13,6 +13,8 @@ public class Truck {
 	}
 	
 	public int getId() { return id; }
+	
+	public void setId(int id) { this.id = id; } 
 	
 	public int getDeliveryCapacity() { return deliveryCapacity; }
 	

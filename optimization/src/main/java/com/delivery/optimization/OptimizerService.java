@@ -3,12 +3,10 @@ package com.delivery.optimization;
 import java.util.*;
 
 import com.delivery.core.eventbus.EventBus;
-import com.delivery.core.eventbus.OptimizationRequest;
-import com.delivery.core.eventbus.OptimizationResult;
-import com.delivery.core.model.Delivery;
-import com.delivery.core.model.Route;
-import com.delivery.core.model.Truck;
-import com.delivery.optimization.*;
+import com.delivery.core_model.Delivery;
+import com.delivery.core_model.Route;
+import com.delivery.core_model.events.OnOptimizationRequest;
+import com.delivery.core_model.events.OnOptimizationResult;
 
 public class OptimizerService {
 
@@ -16,14 +14,9 @@ public class OptimizerService {
 
     public OptimizerService(EventBus eventBus) {
         this.eventBus = eventBus;
-        subscribe();
     }
 
-    private void subscribe() {
-        eventBus.subscribe(OptimizationRequest.class, this::handleOptimization);
-    }
-
-    private void handleOptimization(OptimizationRequest request) {
+    public void handleOptimization(OnOptimizationRequest request) {
         System.out.println("[Optimizer] Calcul en cours...");
 
         // 1. Calculer les routes (Vue par Camion)
@@ -42,7 +35,7 @@ public class OptimizerService {
                 .toList();
 
         // 3. Publier le résultat structuré
-        eventBus.publish(new OptimizationResult(routes, chronologicalDeliveries));
+        eventBus.publish(new OnOptimizationResult(routes, chronologicalDeliveries));
     }
  
     
