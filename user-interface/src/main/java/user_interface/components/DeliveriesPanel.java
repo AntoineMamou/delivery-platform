@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.delivery.core.eventbus.EventBus;
 import com.delivery.core.managers.DeliveryManager;
-import com.delivery.core_model.events.deliveries.OnDeliveryAddRequest;
-import com.delivery.core_model.events.deliveries.OnDeliveryDeleteRequest;
-import com.delivery.core_model.events.deliveries.OnUpdatedDeliveries;
+import com.delivery.core.model.events.deliveries.OnDeliveryAddRequest;
+import com.delivery.core.model.events.deliveries.OnDeliveryDeleteRequest;
+import com.delivery.core.model.events.deliveries.OnUpdatedDeliveries;
 
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;

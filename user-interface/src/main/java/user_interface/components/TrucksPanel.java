@@ -5,9 +5,9 @@ import java.util.List;
 
 import com.delivery.core.eventbus.EventBus;
 import com.delivery.core.managers.TruckManager;
-import com.delivery.core_model.events.trucks.OnTruckAddRequest;
-import com.delivery.core_model.events.trucks.OnTruckDeleteRequest;
-import com.delivery.core_model.events.trucks.OnUpdatedTrucks;
+import com.delivery.core.model.events.trucks.OnTruckAddRequest;
+import com.delivery.core.model.events.trucks.OnTruckDeleteRequest;
+import com.delivery.core.model.events.trucks.OnUpdatedTrucks;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;

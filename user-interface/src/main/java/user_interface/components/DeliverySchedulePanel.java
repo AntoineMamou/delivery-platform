@@ -1,8 +1,8 @@
 package user_interface.components;
 
-import com.delivery.core_model.Delivery;
-import com.delivery.core_model.Route;
-import com.delivery.core_model.events.OnOptimizationResult;
+import com.delivery.core.events.OnOptimizationResult;
+import com.delivery.core.model.Delivery;
+import com.delivery.core.model.Route;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;

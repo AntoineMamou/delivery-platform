@@ -2,11 +2,11 @@ package user_interface;
 
 
 import com.delivery.core.eventbus.EventBus;
+import com.delivery.core.events.OnOptimizationResult;
+import com.delivery.core.model.Graph;
+import com.delivery.core.model.events.deliveries.OnUpdatedDeliveries;
+import com.delivery.core.model.events.trucks.OnUpdatedTrucks;
 import com.delivery.core.ui.DeliveryOptimizerView;
-import com.delivery.core_model.Graph;
-import com.delivery.core_model.events.OnOptimizationResult;
-import com.delivery.core_model.events.deliveries.OnUpdatedDeliveries;
-import com.delivery.core_model.events.trucks.OnUpdatedTrucks;
 
 import application.DeliveryOptimizerApp;
 import javafx.application.Application;

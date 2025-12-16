@@ -6,15 +6,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.delivery.core.managers.DeliveryManager;
+import com.delivery.core.model.Delivery;
+import com.delivery.core.model.Edge;
+import com.delivery.core.model.Graph;
+import com.delivery.core.model.Node;
+import com.delivery.core.model.Route;
+import com.delivery.core.model.events.deliveries.OnUpdatedDeliveries;
+import com.delivery.core.model.events.graph.OnGraphLoaded;
 import com.delivery.core.eventbus.EventBus;
-import com.delivery.core_model.Delivery;
-import com.delivery.core_model.Edge;
-import com.delivery.core_model.Graph;
-import com.delivery.core_model.Node;
-import com.delivery.core_model.Route;
-import com.delivery.core_model.events.OnOptimizationResult;
-import com.delivery.core_model.events.deliveries.OnUpdatedDeliveries;
-import com.delivery.core_model.events.graph.OnGraphLoaded;
+import com.delivery.core.events.OnOptimizationResult;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
