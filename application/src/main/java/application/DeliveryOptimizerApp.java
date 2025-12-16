@@ -1,15 +1,15 @@
 package application;
 
 import com.delivery.core.eventbus.EventBus;
+import com.delivery.core.events.OnOptimizationRequest;
+import com.delivery.core.events.OnOptimizationResult;
 import com.delivery.core.managers.DeliveryManager;
 import com.delivery.core.managers.TruckManager;
+import com.delivery.core.model.Graph;
+import com.delivery.core.model.events.graph.OnFetchGraphRequest;
+import com.delivery.core.model.events.graph.OnGraphLoaded;
 import com.delivery.core.ports.GraphFetcherPort;
 import com.delivery.core.ui.DeliveryOptimizerView;
-import com.delivery.core_model.Graph;
-import com.delivery.core_model.events.OnOptimizationRequest;
-import com.delivery.core_model.events.OnOptimizationResult;
-import com.delivery.core_model.events.graph.OnFetchGraphRequest;
-import com.delivery.core_model.events.graph.OnGraphLoaded;
 import com.delivery.datafetcher.GraphFetcherService;
 import com.delivery.optimization.OptimizerService;
 

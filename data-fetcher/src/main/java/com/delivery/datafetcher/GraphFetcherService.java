@@ -3,8 +3,8 @@ package com.delivery.datafetcher;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import com.delivery.core.model.Graph;
 import com.delivery.core.ports.GraphFetcherPort;
-import com.delivery.core_model.Graph;
 import com.google.gson.Gson;
 
 public class GraphFetcherService implements GraphFetcherPort{

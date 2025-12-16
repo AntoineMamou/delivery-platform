@@ -1,4 +1,4 @@
-package com.delivery.core_model.events.trucks;
+package com.delivery.core.model.events.trucks;
 
 import java.util.List;
 

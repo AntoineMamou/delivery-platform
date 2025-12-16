@@ -1,4 +1,4 @@
-package com.delivery.core_model;
+package com.delivery.core.model;
 
 public class Edge {
 	private	int from;

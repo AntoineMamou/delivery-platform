@@ -1,16 +1,16 @@
 package com.delivery.optimization;
 
-import com.delivery.core_model.Delivery;
-import com.delivery.core_model.Edge;
-import com.delivery.core_model.Graph;
-import com.delivery.core_model.Node;
-import com.delivery.core_model.Route;
-import com.delivery.core_model.Truck;
-
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.delivery.core.model.Delivery;
+import com.delivery.core.model.Edge;
+import com.delivery.core.model.Graph;
+import com.delivery.core.model.Node;
+import com.delivery.core.model.Route;
+import com.delivery.core.model.Truck;
 
 public class DeliveryOptimizer {
 

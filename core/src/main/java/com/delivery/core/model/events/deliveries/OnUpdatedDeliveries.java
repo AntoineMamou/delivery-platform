@@ -1,4 +1,4 @@
-package com.delivery.core_model.events.deliveries;
+package com.delivery.core.model.events.deliveries;
 
 import java.util.List;
 

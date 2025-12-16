@@ -1,7 +1,7 @@
 package core;
 
 import com.delivery.core.eventbus.EventBus;
-import com.delivery.core_model.events.OnOptimizationRequest;
+import com.delivery.core.events.OnOptimizationRequest;
 
 public class EventBusReceiverTest {
 

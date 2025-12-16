@@ -1,10 +1,10 @@
-package com.delivery.core_model.events;
+package com.delivery.core.events;
 
 import java.util.List;
 
-import com.delivery.core_model.Delivery;
-import com.delivery.core_model.Graph;
-import com.delivery.core_model.Truck;
+import com.delivery.core.model.Delivery;
+import com.delivery.core.model.Graph;
+import com.delivery.core.model.Truck;
 
 public record OnOptimizationRequest(
     List<Delivery> deliveries,

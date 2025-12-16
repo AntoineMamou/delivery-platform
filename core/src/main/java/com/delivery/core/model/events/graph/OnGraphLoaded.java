@@ -1,5 +1,5 @@
-package com.delivery.core_model.events.graph;
+package com.delivery.core.model.events.graph;
 
-import com.delivery.core_model.Graph;
+import com.delivery.core.model.Graph;
 
 public record OnGraphLoaded(Graph graph) {}

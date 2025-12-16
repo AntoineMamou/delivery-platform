@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.delivery.core.eventbus.EventBus;
-import com.delivery.core_model.Truck;
-import com.delivery.core_model.events.trucks.OnTruckAddRequest;
-import com.delivery.core_model.events.trucks.OnTruckDeleteRequest;
-import com.delivery.core_model.events.trucks.OnUpdatedTrucks;
+import com.delivery.core.model.Truck;
+import com.delivery.core.model.events.trucks.OnTruckAddRequest;
+import com.delivery.core.model.events.trucks.OnTruckDeleteRequest;
+import com.delivery.core.model.events.trucks.OnUpdatedTrucks;
 
 public class TruckManager {
 	private static EventBus eventBus;

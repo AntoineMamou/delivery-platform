@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.delivery.core.eventbus.EventBus;
+import com.delivery.core.events.OnOptimizationResult;
 import com.delivery.core.managers.exceptions.InvalidDeliveryWindowException;
-import com.delivery.core_model.Delivery;
-import com.delivery.core_model.events.OnOptimizationResult;
-import com.delivery.core_model.events.deliveries.OnDeliveryAddRequest;
-import com.delivery.core_model.events.deliveries.OnDeliveryDeleteRequest;
-import com.delivery.core_model.events.deliveries.OnUpdatedDeliveries;
-import com.delivery.core_model.events.graph.OnGraphLoaded;
+import com.delivery.core.model.Delivery;
+import com.delivery.core.model.events.deliveries.OnDeliveryAddRequest;
+import com.delivery.core.model.events.deliveries.OnDeliveryDeleteRequest;
+import com.delivery.core.model.events.deliveries.OnUpdatedDeliveries;
+import com.delivery.core.model.events.graph.OnGraphLoaded;
 
 public class DeliveryManager {
 	private static EventBus eventBus;

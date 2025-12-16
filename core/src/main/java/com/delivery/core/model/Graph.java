@@ -1,4 +1,4 @@
-package com.delivery.core_model;
+package com.delivery.core.model;
 
 import java.util.List;
 

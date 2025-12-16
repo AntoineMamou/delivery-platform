@@ -3,10 +3,10 @@ package com.delivery.optimization;
 import java.util.*;
 
 import com.delivery.core.eventbus.EventBus;
-import com.delivery.core_model.Delivery;
-import com.delivery.core_model.Route;
-import com.delivery.core_model.events.OnOptimizationRequest;
-import com.delivery.core_model.events.OnOptimizationResult;
+import com.delivery.core.events.OnOptimizationRequest;
+import com.delivery.core.events.OnOptimizationResult;
+import com.delivery.core.model.Delivery;
+import com.delivery.core.model.Route;
 
 public class OptimizerService {
 
