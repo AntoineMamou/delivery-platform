@@ -1,2 +1,5 @@
-Pour exécuter le programme :
-- run :  ```mvn clean javafx:run```
+Pour exécuter le programme, il faut exécuter : 
+```bash
+cd user-interface
+mvn clean javafx:run
+```
